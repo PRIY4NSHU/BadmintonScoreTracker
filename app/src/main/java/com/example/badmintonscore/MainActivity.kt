@@ -188,6 +188,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkGameEnd() {
+        // This function is currently not working as intended
 
         val maxScore = targetScore + 9
 
