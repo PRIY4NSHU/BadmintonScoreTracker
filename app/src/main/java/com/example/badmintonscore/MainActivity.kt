@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.media.session.MediaSession
-import android.media.session.PlaybackState
 import android.media.MediaPlayer
 import android.view.KeyEvent
 
