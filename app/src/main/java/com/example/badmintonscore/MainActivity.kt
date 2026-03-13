@@ -29,11 +29,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaSession: MediaSession
     private lateinit var mediaPlayer: MediaPlayer
 
+    private var playerName = "You"
+    private var opponentName = "Opponent"
+
     private val history = mutableListOf<GameState>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        playerName = intent.getStringExtra("PLAYER_NAME") ?: "You"
+        opponentName = intent.getStringExtra("OPPONENT_NAME") ?: "Opponent"
+
+        playerName = intent.getStringExtra("PLAYER_NAME") ?: "You"
+        opponentName = intent.getStringExtra("OPPONENT_NAME") ?: "Opponent"
+
+// ADD THESE TWO LINES
+        findViewById<TextView>(R.id.playerNameLabel).text = playerName
+        findViewById<TextView>(R.id.opponentNameLabel).text = opponentName
 
         textToSpeech = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
@@ -51,35 +64,23 @@ class MainActivity : AppCompatActivity() {
                     mediaButtonIntent.getParcelableExtra<KeyEvent>(android.content.Intent.EXTRA_KEY_EVENT)
 
                 if (event != null && event.action == KeyEvent.ACTION_DOWN) {
-
                     when (event.keyCode) {
-
-                        KeyEvent.KEYCODE_MEDIA_NEXT -> {
-                            addMyPoint()
-                        }
-
-                        KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-                            addOpponentPoint()
-                        }
-
+                        KeyEvent.KEYCODE_MEDIA_NEXT -> addMyPoint()
+                        KeyEvent.KEYCODE_MEDIA_PREVIOUS -> addOpponentPoint()
                         KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
                         KeyEvent.KEYCODE_MEDIA_PLAY,
                         KeyEvent.KEYCODE_MEDIA_PAUSE,
-                        KeyEvent.KEYCODE_HEADSETHOOK -> {
-                            speakScore()
-                        }
+                        KeyEvent.KEYCODE_HEADSETHOOK -> speakScore()
                     }
                 }
                 return true
             }
-
         })
 
         mediaSession.setFlags(
             MediaSession.FLAG_HANDLES_MEDIA_BUTTONS or
                     MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS
         )
-
         mediaSession.isActive = true
 
         myScoreView = findViewById(R.id.myScore)
@@ -89,27 +90,17 @@ class MainActivity : AppCompatActivity() {
         val opponentPointBtn = findViewById<Button>(R.id.opponentPointBtn)
         val undoBtn = findViewById<Button>(R.id.undoBtn)
 
-        myPointBtn.setOnClickListener {
-            addMyPoint()
-        }
-
-        opponentPointBtn.setOnClickListener {
-            addOpponentPoint()
-        }
+        myPointBtn.setOnClickListener { addMyPoint() }
+        opponentPointBtn.setOnClickListener { addOpponentPoint() }
 
         undoBtn.setOnClickListener {
-
             if (history.isNotEmpty()) {
-
                 val previousState = history.removeAt(history.size - 1)
-
                 myScore = previousState.myScore
                 opponentScore = previousState.opponentScore
                 isMyServe = previousState.isMyServe
-
                 myScoreView.text = myScore.toString()
                 opponentScoreView.text = opponentScore.toString()
-
                 speakScore()
             }
         }
@@ -117,7 +108,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun speakScore() {
         val serveSide = getServeSide()
-        val scoreText = "You $myScore. Opponent $opponentScore. $serveSide"
+        val scoreText = "$playerName $myScore. $opponentName $opponentScore. $serveSide"
         textToSpeech.speak(scoreText, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
@@ -133,86 +124,51 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getServeSide(): String {
-
-        if (isMyServe) {
-
-            return if (myScore % 2 == 0) {
-                "You serve from right"
-            } else {
-                "You serve from left"
-            }
-
+        return if (isMyServe) {
+            if (myScore % 2 == 0) "$playerName serves from right"
+            else "$playerName serves from left"
         } else {
-
-            return if (opponentScore % 2 == 0) {
-                "Opponent serves from right"
-            } else {
-                "Opponent serves from left"
-            }
-
+            if (opponentScore % 2 == 0) "$opponentName serves from right"
+            else "$opponentName serves from left"
         }
-
     }
 
     private fun addMyPoint() {
-
         if (gameFinished) return
-
         history.add(GameState(myScore, opponentScore, isMyServe))
-
         myScore++
         isMyServe = true
-
         myScoreView.text = myScore.toString()
-
         checkGameEnd()
-
         speakScore()
     }
 
     private fun addOpponentPoint() {
-
         if (gameFinished) return
-
         history.add(GameState(myScore, opponentScore, isMyServe))
-
         opponentScore++
         isMyServe = false
-
         opponentScoreView.text = opponentScore.toString()
-
         checkGameEnd()
-
         speakScore()
-
     }
 
     private fun checkGameEnd() {
-        // This function is currently not working as intended
-
         val maxScore = targetScore + 9
 
         if (myScore >= targetScore || opponentScore >= targetScore) {
-
             val diff = kotlin.math.abs(myScore - opponentScore)
-
             if (diff >= 2 || myScore == maxScore || opponentScore == maxScore) {
-
                 gameFinished = true
-
                 if (myScore > opponentScore) {
                     textToSpeech.speak(
-                        "Game over. You win $myScore to $opponentScore",
-                        TextToSpeech.QUEUE_FLUSH,
-                        null,
-                        null
+                        "Game over. $playerName wins $myScore to $opponentScore",
+                        TextToSpeech.QUEUE_FLUSH, null, null
                     )
                 } else {
                     textToSpeech.speak(
-                        "Game over. Opponent wins $opponentScore to $myScore",
-                        TextToSpeech.QUEUE_FLUSH,
-                        null,
-                        null
+                        "Game over. $opponentName wins $opponentScore to $myScore",
+                        TextToSpeech.QUEUE_FLUSH, null, null
                     )
                 }
             }
