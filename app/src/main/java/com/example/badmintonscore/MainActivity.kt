@@ -3,6 +3,7 @@ package com.example.badmintonscore
 import android.speech.tts.TextToSpeech
 import java.util.Locale
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
@@ -38,13 +39,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        playerName = intent.getStringExtra("PLAYER_NAME") ?: "You"
-        opponentName = intent.getStringExtra("OPPONENT_NAME") ?: "Opponent"
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         playerName = intent.getStringExtra("PLAYER_NAME") ?: "You"
         opponentName = intent.getStringExtra("OPPONENT_NAME") ?: "Opponent"
+        targetScore = intent.getIntExtra("TARGET_SCORE", 21)
 
-// ADD THESE TWO LINES
         findViewById<TextView>(R.id.playerNameLabel).text = playerName
         findViewById<TextView>(R.id.opponentNameLabel).text = opponentName
 
@@ -89,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         val myPointBtn = findViewById<Button>(R.id.myPointBtn)
         val opponentPointBtn = findViewById<Button>(R.id.opponentPointBtn)
         val undoBtn = findViewById<Button>(R.id.undoBtn)
+        val resetBtn = findViewById<Button>(R.id.resetBtn)
 
         myPointBtn.setOnClickListener { addMyPoint() }
         opponentPointBtn.setOnClickListener { addOpponentPoint() }
@@ -99,11 +102,30 @@ class MainActivity : AppCompatActivity() {
                 myScore = previousState.myScore
                 opponentScore = previousState.opponentScore
                 isMyServe = previousState.isMyServe
+                gameFinished = false
                 myScoreView.text = myScore.toString()
                 opponentScoreView.text = opponentScore.toString()
                 speakScore()
             }
         }
+
+        resetBtn.setOnClickListener { resetMatch() }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
+    }
+
+    private fun resetMatch() {
+        myScore = 0
+        opponentScore = 0
+        isMyServe = true
+        gameFinished = false
+        history.clear()
+        myScoreView.text = "0"
+        opponentScoreView.text = "0"
+        textToSpeech.speak("Match reset", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun speakScore() {
@@ -139,8 +161,7 @@ class MainActivity : AppCompatActivity() {
         myScore++
         isMyServe = true
         myScoreView.text = myScore.toString()
-        checkGameEnd()
-        speakScore()
+        if (!checkGameEnd()) speakScore()
     }
 
     private fun addOpponentPoint() {
@@ -149,16 +170,15 @@ class MainActivity : AppCompatActivity() {
         opponentScore++
         isMyServe = false
         opponentScoreView.text = opponentScore.toString()
-        checkGameEnd()
-        speakScore()
+        if (!checkGameEnd()) speakScore()
     }
 
-    private fun checkGameEnd() {
+    private fun checkGameEnd(): Boolean {
         val maxScore = targetScore + 9
 
         if (myScore >= targetScore || opponentScore >= targetScore) {
             val diff = kotlin.math.abs(myScore - opponentScore)
-            if (diff >= 2 || myScore == maxScore || opponentScore == maxScore) {
+            if (diff >= 2 || myScore >= maxScore || opponentScore >= maxScore) {
                 gameFinished = true
                 if (myScore > opponentScore) {
                     textToSpeech.speak(
@@ -171,7 +191,9 @@ class MainActivity : AppCompatActivity() {
                         TextToSpeech.QUEUE_FLUSH, null, null
                     )
                 }
+                return true
             }
         }
+        return false
     }
 }

@@ -30,6 +30,43 @@
         android:inputType="textPersonName"
         android:layout_marginBottom="32dp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play to:"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <RadioGroup
+        android:id="@+id/targetScoreGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="32dp">
+
+        <RadioButton
+            android:id="@+id/score11"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="11"
+            android:layout_marginEnd="16dp" />
+
+        <RadioButton
+            android:id="@+id/score15"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="15"
+            android:layout_marginEnd="16dp" />
+
+        <RadioButton
+            android:id="@+id/score21"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="21"
+            android:checked="true" />
+
+    </RadioGroup>
+
     <Button
         android:id="@+id/startGameBtn"
         android:layout_width="match_parent"
