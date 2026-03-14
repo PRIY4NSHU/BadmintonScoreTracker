@@ -1,79 +1,268 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="@color/bg_primary">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary" />
+    <!-- Background feather / court decorative element -->
+    <ImageView
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:src="@drawable/ic_shuttlecock_bg"
+        android:alpha="0.05"
+        android:layout_gravity="center"
+        android:contentDescription="decorative"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="24dp">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/playerNameLabel"
-            android:text="My Score"
-            android:textSize="18sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <!-- Toolbar -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/bg_primary"
+            android:elevation="0dp"/>
 
-        <TextView
-            android:id="@+id/myScore"
-            android:text="0"
-            android:textSize="48sp"
-            android:layout_marginBottom="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <!-- Score area -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:weightSum="2">
 
-        <Button
-            android:id="@+id/myPointBtn"
-            android:text="My Point"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            <!-- Player side -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingStart="20dp"
+                android:paddingEnd="10dp"
+                android:background="@drawable/player_side_bg">
 
-        <TextView
-            android:id="@+id/opponentNameLabel"
-            android:text="Opponent Score"
-            android:textSize="18sp"
-            android:layout_marginTop="32dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/playerNameLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="You"
+                    android:fontFamily="@font/lato_bold"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary"
+                    android:letterSpacing="0.1"
+                    android:textAllCaps="true"
+                    android:layout_marginBottom="4dp"/>
 
-        <TextView
-            android:id="@+id/opponentScore"
-            android:text="0"
-            android:textSize="48sp"
-            android:layout_marginBottom="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+                <!-- Serve indicator -->
+                <ImageView
+                    android:id="@+id/myServeIndicator"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/ic_serve_dot"
+                    android:layout_marginBottom="8dp"
+                    android:contentDescription="serving"
+                    android:visibility="visible"/>
 
-        <Button
-            android:id="@+id/opponentPointBtn"
-            android:text="Opponent Point"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/myScore"
+                    android:text="0"
+                    android:fontFamily="@font/playfair_display_bold"
+                    android:textStyle="bold"
+                    android:textSize="88sp"
+                    android:textColor="@color/text_primary"
+                    android:lineSpacingExtra="-8dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"/>
 
-        <Button
-            android:id="@+id/undoBtn"
-            android:text="Undo"
-            android:layout_marginTop="24dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+                <Button
+                    android:id="@+id/myPointBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="+ Point"
+                    android:fontFamily="@font/lato_bold"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:background="@drawable/btn_player_bg"
+                    android:stateListAnimator="@null"
+                    android:layout_marginTop="4dp"/>
 
-        <Button
-            android:id="@+id/resetBtn"
-            android:text="Reset Match"
-            android:layout_marginTop="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <!-- Center divider -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/divider"/>
+
+            <!-- Opponent side -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingStart="10dp"
+                android:paddingEnd="20dp">
+
+                <TextView
+                    android:id="@+id/opponentNameLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Opponent"
+                    android:fontFamily="@font/lato_bold"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary"
+                    android:letterSpacing="0.1"
+                    android:textAllCaps="true"
+                    android:layout_marginBottom="4dp"/>
+
+                <ImageView
+                    android:id="@+id/opponentServeIndicator"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/ic_serve_dot"
+                    android:layout_marginBottom="8dp"
+                    android:contentDescription="serving"
+                    android:visibility="invisible"/>
+
+                <TextView
+                    android:id="@+id/opponentScore"
+                    android:text="0"
+                    android:fontFamily="@font/playfair_display_bold"
+                    android:textStyle="bold"
+                    android:textSize="88sp"
+                    android:textColor="@color/text_primary"
+                    android:lineSpacingExtra="-8dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"/>
+
+                <Button
+                    android:id="@+id/opponentPointBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="+ Point"
+                    android:fontFamily="@font/lato_bold"
+                    android:textSize="14sp"
+                    android:textColor="@color/accent_coral"
+                    android:background="@drawable/btn_opponent_bg"
+                    android:stateListAnimator="@null"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Bottom action bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="28dp"
+            android:gravity="center"
+            android:background="@color/card_bg"
+            android:elevation="8dp">
+
+            <Button
+                android:id="@+id/undoBtn"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="↩ Undo"
+                android:fontFamily="@font/lato_bold"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:background="@drawable/btn_secondary_bg"
+                android:stateListAnimator="@null"
+                android:layout_marginEnd="10dp"/>
+
+            <Button
+                android:id="@+id/resetBtn"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Reset"
+                android:fontFamily="@font/lato_bold"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:background="@drawable/btn_secondary_bg"
+                android:stateListAnimator="@null"
+                android:layout_marginStart="10dp"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</LinearLayout>
+    <!-- Winner overlay (hidden by default, shown via code) -->
+    <FrameLayout
+        android:id="@+id/winnerOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#CC1A2E1A"
+        android:visibility="gone"
+        android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="40dp">
+
+            <!-- Circular trophy container -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="44dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#FFD166"
+                xmlns:app="http://schemas.android.com/apk/res-auto">
+
+                <ImageView
+                    android:id="@+id/trophyIcon"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/trophy"
+                    android:scaleType="centerInside"
+                    android:contentDescription="trophy"/>
+
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/winnerText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You Win!"
+                android:fontFamily="@font/playfair_display_bold"
+                android:textStyle="bold"
+                android:textSize="44sp"
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/winnerScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="21 – 18"
+                android:fontFamily="@font/lato_regular"
+                android:textSize="22sp"
+                android:textColor="#CCFFFFFF"
+                android:gravity="center"/>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+
+</FrameLayout>
