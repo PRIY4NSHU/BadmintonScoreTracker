@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/bg_primary">
 
-    <!-- Background feather / court decorative element -->
+    <!-- Background watermark -->
     <ImageView
         android:layout_width="220dp"
         android:layout_height="220dp"
@@ -57,14 +57,22 @@
                     android:textAllCaps="true"
                     android:layout_marginBottom="4dp"/>
 
-                <!-- Serve indicator -->
-                <ImageView
+                <!-- SERVE label (replaces dot) -->
+                <TextView
                     android:id="@+id/myServeIndicator"
-                    android:layout_width="10dp"
-                    android:layout_height="10dp"
-                    android:src="@drawable/ic_serve_dot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SERVE"
+                    android:fontFamily="@font/lato_bold"
+                    android:textSize="10sp"
+                    android:textColor="@color/white"
+                    android:letterSpacing="0.12"
+                    android:background="@drawable/serve_badge_bg"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
                     android:layout_marginBottom="8dp"
-                    android:contentDescription="serving"
                     android:visibility="visible"/>
 
                 <TextView
@@ -121,13 +129,22 @@
                     android:textAllCaps="true"
                     android:layout_marginBottom="4dp"/>
 
-                <ImageView
+                <!-- SERVE label (replaces dot) -->
+                <TextView
                     android:id="@+id/opponentServeIndicator"
-                    android:layout_width="10dp"
-                    android:layout_height="10dp"
-                    android:src="@drawable/ic_serve_dot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SERVE"
+                    android:fontFamily="@font/lato_bold"
+                    android:textSize="10sp"
+                    android:textColor="@color/white"
+                    android:letterSpacing="0.12"
+                    android:background="@drawable/serve_badge_bg"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
                     android:layout_marginBottom="8dp"
-                    android:contentDescription="serving"
                     android:visibility="invisible"/>
 
                 <TextView
@@ -200,7 +217,7 @@
 
     </LinearLayout>
 
-    <!-- Winner overlay (hidden by default, shown via code) -->
+    <!-- Winner overlay -->
     <FrameLayout
         android:id="@+id/winnerOverlay"
         android:layout_width="match_parent"
@@ -219,18 +236,18 @@
 
             <!-- Circular trophy container -->
             <androidx.cardview.widget.CardView
-                android:layout_width="88dp"
-                android:layout_height="88dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
                 android:layout_marginBottom="20dp"
-                app:cardCornerRadius="44dp"
+                app:cardCornerRadius="50dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="#FFD166"
                 xmlns:app="http://schemas.android.com/apk/res-auto">
 
                 <ImageView
                     android:id="@+id/trophyIcon"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
                     android:layout_gravity="center"
                     android:src="@drawable/trophy"
                     android:scaleType="centerInside"
@@ -264,5 +281,12 @@
 
     </FrameLayout>
 
+    <!-- Confetti view - sits on top of everything -->
+    <nl.dionsegijn.konfetti.xml.KonfettiView
+        android:id="@+id/konfettiView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"/>
 
 </FrameLayout>

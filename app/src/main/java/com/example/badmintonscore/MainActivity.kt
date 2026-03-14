@@ -18,6 +18,11 @@ import android.media.session.MediaSession
 import android.media.MediaPlayer
 import android.view.KeyEvent
 import com.bumptech.glide.Glide
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import nl.dionsegijn.konfetti.xml.KonfettiView
+import java.util.concurrent.TimeUnit
 
 data class GameState(
     val myScore: Int,
@@ -32,13 +37,15 @@ class MainActivity : AppCompatActivity() {
     private var isMyServe = true
     private var targetScore = 21
     private var gameFinished = false
+
     private lateinit var myScoreView: TextView
     private lateinit var opponentScoreView: TextView
-    private lateinit var myServeIndicator: ImageView
-    private lateinit var opponentServeIndicator: ImageView
+    private lateinit var myServeIndicator: TextView
+    private lateinit var opponentServeIndicator: TextView
     private lateinit var winnerOverlay: FrameLayout
     private lateinit var winnerText: TextView
     private lateinit var winnerScore: TextView
+    private lateinit var konfettiView: KonfettiView
     private lateinit var textToSpeech: TextToSpeech
     private lateinit var mediaSession: MediaSession
     private lateinit var mediaPlayer: MediaPlayer
@@ -71,21 +78,20 @@ class MainActivity : AppCompatActivity() {
         winnerOverlay = findViewById(R.id.winnerOverlay)
         winnerText = findViewById(R.id.winnerText)
         winnerScore = findViewById(R.id.winnerScore)
+        konfettiView = findViewById(R.id.konfettiView)
 
         textToSpeech = TextToSpeech(this) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                textToSpeech.language = Locale.US
-            }
+            if (status == TextToSpeech.SUCCESS) textToSpeech.language = Locale.US
         }
 
         mediaSession = MediaSession(this, "BadmintonScoreSession")
         mediaPlayer = MediaPlayer.create(this, R.raw.silence)
         mediaPlayer.isLooping = true
         mediaPlayer.start()
+
         mediaSession.setCallback(object : MediaSession.Callback() {
             override fun onMediaButtonEvent(mediaButtonIntent: android.content.Intent): Boolean {
-                val event =
-                    mediaButtonIntent.getParcelableExtra<KeyEvent>(android.content.Intent.EXTRA_KEY_EVENT)
+                val event = mediaButtonIntent.getParcelableExtra<KeyEvent>(android.content.Intent.EXTRA_KEY_EVENT)
                 if (event != null && event.action == KeyEvent.ACTION_DOWN) {
                     when (event.keyCode) {
                         KeyEvent.KEYCODE_MEDIA_NEXT -> addMyPoint()
@@ -105,22 +111,18 @@ class MainActivity : AppCompatActivity() {
         )
         mediaSession.isActive = true
 
-        val myPointBtn = findViewById<Button>(R.id.myPointBtn)
-        val opponentPointBtn = findViewById<Button>(R.id.opponentPointBtn)
-        val undoBtn = findViewById<Button>(R.id.undoBtn)
-        val resetBtn = findViewById<Button>(R.id.resetBtn)
+        findViewById<Button>(R.id.myPointBtn).setOnClickListener { addMyPoint() }
+        findViewById<Button>(R.id.opponentPointBtn).setOnClickListener { addOpponentPoint() }
 
-        myPointBtn.setOnClickListener { addMyPoint() }
-        opponentPointBtn.setOnClickListener { addOpponentPoint() }
-
-        undoBtn.setOnClickListener {
+        findViewById<Button>(R.id.undoBtn).setOnClickListener {
             if (history.isNotEmpty()) {
-                val previousState = history.removeAt(history.size - 1)
-                myScore = previousState.myScore
-                opponentScore = previousState.opponentScore
-                isMyServe = previousState.isMyServe
+                val prev = history.removeAt(history.size - 1)
+                myScore = prev.myScore
+                opponentScore = prev.opponentScore
+                isMyServe = prev.isMyServe
                 gameFinished = false
                 winnerOverlay.visibility = View.GONE
+                konfettiView.reset()
                 myScoreView.text = myScore.toString()
                 opponentScoreView.text = opponentScore.toString()
                 updateServeIndicators()
@@ -128,13 +130,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        resetBtn.setOnClickListener { resetMatch() }
+        findViewById<Button>(R.id.resetBtn).setOnClickListener { resetMatch() }
 
-        // Tap winner overlay to dismiss
         winnerOverlay.setOnClickListener {
             winnerOverlay.animate().alpha(0f).setDuration(300).withEndAction {
                 winnerOverlay.visibility = View.GONE
                 winnerOverlay.alpha = 1f
+                konfettiView.reset()
             }.start()
         }
 
@@ -152,25 +154,63 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun animateScoreChange(scoreView: TextView) {
-        // Score pop animation
         val scaleX = ObjectAnimator.ofFloat(scoreView, "scaleX", 1f, 1.25f, 1f)
         val scaleY = ObjectAnimator.ofFloat(scoreView, "scaleY", 1f, 1.25f, 1f)
         scaleX.duration = 350
         scaleY.duration = 350
         scaleX.interpolator = OvershootInterpolator(3f)
         scaleY.interpolator = OvershootInterpolator(3f)
+        AnimatorSet().apply {
+            playTogether(scaleX, scaleY)
+            start()
+        }
+    }
 
-        val set = AnimatorSet()
-        set.playTogether(scaleX, scaleY)
-        set.start()
-
+    private fun launchConfetti() {
+        val colors = listOf(
+            0xFF4A7C59.toInt(),
+            0xFFC0604A.toInt(),
+            0xFFFFD166.toInt(),
+            0xFF5ECEC8.toInt(),
+            0xFFA8C8F0.toInt(),
+            0xFFFF8FAF.toInt()
+        )
+        val parties = listOf(
+            Party(
+                speed = 2f,
+                maxSpeed = 25f,
+                damping = 0.9f,
+                spread = 180,
+                colors = colors,
+                emitter = Emitter(duration = 3L, timeUnit = TimeUnit.SECONDS).max(300),
+                position = Position.Relative(0.5, 0.0)
+            ),
+            Party(
+                speed = 2f,
+                maxSpeed = 25f,
+                damping = 0.9f,
+                spread = 90,
+                colors = colors,
+                emitter = Emitter(duration = 3L, timeUnit = TimeUnit.SECONDS).max(150),
+                position = Position.Relative(0.0, 0.0)
+            ),
+            Party(
+                speed = 2f,
+                maxSpeed = 25f,
+                damping = 0.9f,
+                spread = 90,
+                colors = colors,
+                emitter = Emitter(duration = 3L, timeUnit = TimeUnit.SECONDS).max(150),
+                position = Position.Relative(1.0, 0.0)
+            )
+        )
+        parties.forEach { konfettiView.start(it) }
     }
 
     private fun showWinnerOverlay(winnerName: String) {
-        winnerText.text = if (winnerName == playerName) "$winnerName wins!" else "$winnerName wins"
+        winnerText.text = "$winnerName wins!"
         winnerScore.text = "$myScore – $opponentScore"
 
-        // Load trophy GIF — replace R.drawable.trophy with your Flaticon GIF name
         Glide.with(this)
             .asGif()
             .load(R.drawable.trophy)
@@ -178,15 +218,12 @@ class MainActivity : AppCompatActivity() {
 
         winnerOverlay.alpha = 0f
         winnerOverlay.visibility = View.VISIBLE
-
-        // Animate in
         winnerOverlay.animate()
             .alpha(1f)
             .setDuration(400)
             .setInterpolator(DecelerateInterpolator())
             .start()
 
-        // Bounce the text in
         winnerText.scaleX = 0.5f
         winnerText.scaleY = 0.5f
         winnerText.animate()
@@ -196,6 +233,8 @@ class MainActivity : AppCompatActivity() {
             .setStartDelay(200)
             .setInterpolator(OvershootInterpolator(2f))
             .start()
+
+        launchConfetti()
     }
 
     private fun resetMatch() {
@@ -207,25 +246,17 @@ class MainActivity : AppCompatActivity() {
         myScoreView.text = "0"
         opponentScoreView.text = "0"
         winnerOverlay.visibility = View.GONE
+        konfettiView.reset()
         updateServeIndicators()
         textToSpeech.speak("Match reset", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun speakScore() {
         val serveSide = getServeSide()
-        val scoreText = "$playerName $myScore. $opponentName $opponentScore. $serveSide"
-        textToSpeech.speak(scoreText, TextToSpeech.QUEUE_FLUSH, null, null)
-    }
-
-    override fun onDestroy() {
-        if (::textToSpeech.isInitialized) {
-            textToSpeech.stop()
-            textToSpeech.shutdown()
-        }
-        if (::mediaPlayer.isInitialized) {
-            mediaPlayer.release()
-        }
-        super.onDestroy()
+        textToSpeech.speak(
+            "$playerName $myScore. $opponentName $opponentScore. $serveSide",
+            TextToSpeech.QUEUE_FLUSH, null, null
+        )
     }
 
     private fun getServeSide(): String {
@@ -262,16 +293,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkGameEnd(): Boolean {
         val maxScore = targetScore + 9
-
         if (myScore >= targetScore || opponentScore >= targetScore) {
             val diff = kotlin.math.abs(myScore - opponentScore)
             if (diff >= 2 || myScore >= maxScore || opponentScore >= maxScore) {
                 gameFinished = true
                 val winnerName = if (myScore > opponentScore) playerName else opponentName
-                val loserName = if (myScore > opponentScore) opponentName else playerName
-
                 showWinnerOverlay(winnerName)
-
                 val speech = if (myScore > opponentScore)
                     "Game over. $playerName wins $myScore to $opponentScore"
                 else
@@ -281,5 +308,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return false
+    }
+
+    override fun onDestroy() {
+        if (::textToSpeech.isInitialized) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+        if (::mediaPlayer.isInitialized) mediaPlayer.release()
+        super.onDestroy()
     }
 }
