@@ -12,11 +12,11 @@ import android.view.animation.OvershootInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.Button
 import android.widget.FrameLayout
-import android.widget.ImageView
 import android.widget.TextView
 import android.media.session.MediaSession
 import android.media.MediaPlayer
 import android.view.KeyEvent
+import androidx.activity.viewModels
 import com.bumptech.glide.Glide
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -24,19 +24,9 @@ import nl.dionsegijn.konfetti.core.emitter.Emitter
 import nl.dionsegijn.konfetti.xml.KonfettiView
 import java.util.concurrent.TimeUnit
 
-data class GameState(
-    val myScore: Int,
-    val opponentScore: Int,
-    val isMyServe: Boolean
-)
-
 class MainActivity : AppCompatActivity() {
 
-    private var myScore = 0
-    private var opponentScore = 0
-    private var isMyServe = true
-    private var targetScore = 21
-    private var gameFinished = false
+    private val viewModel: MainViewModel by viewModels()
 
     private lateinit var myScoreView: TextView
     private lateinit var opponentScoreView: TextView
@@ -50,11 +40,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaSession: MediaSession
     private lateinit var mediaPlayer: MediaPlayer
 
-    private var playerName = "You"
-    private var opponentName = "Opponent"
-
-    private val history = mutableListOf<GameState>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -64,12 +49,14 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = ""
 
-        playerName = intent.getStringExtra("PLAYER_NAME") ?: "You"
-        opponentName = intent.getStringExtra("OPPONENT_NAME") ?: "Opponent"
-        targetScore = intent.getIntExtra("TARGET_SCORE", 21)
+        if (viewModel.history.isEmpty() && viewModel.myScore.value == 0 && viewModel.opponentScore.value == 0) {
+            viewModel.playerName = intent.getStringExtra("PLAYER_NAME") ?: "You"
+            viewModel.opponentName = intent.getStringExtra("OPPONENT_NAME") ?: "Opponent"
+            viewModel.targetScore = intent.getIntExtra("TARGET_SCORE", 21)
+        }
 
-        findViewById<TextView>(R.id.playerNameLabel).text = playerName
-        findViewById<TextView>(R.id.opponentNameLabel).text = opponentName
+        findViewById<TextView>(R.id.playerNameLabel).text = viewModel.playerName
+        findViewById<TextView>(R.id.opponentNameLabel).text = viewModel.opponentName
 
         myScoreView = findViewById(R.id.myScore)
         opponentScoreView = findViewById(R.id.opponentScore)
@@ -79,6 +66,31 @@ class MainActivity : AppCompatActivity() {
         winnerText = findViewById(R.id.winnerText)
         winnerScore = findViewById(R.id.winnerScore)
         konfettiView = findViewById(R.id.konfettiView)
+
+        // Observe ViewModel data
+        viewModel.myScore.observe(this) { score ->
+            myScoreView.text = score.toString()
+            animateScoreChange(myScoreView)
+            if (!checkGameEnd()) speakScore()
+        }
+
+        viewModel.opponentScore.observe(this) { score ->
+            opponentScoreView.text = score.toString()
+            animateScoreChange(opponentScoreView)
+            if (!checkGameEnd()) speakScore()
+        }
+
+        viewModel.isMyServe.observe(this) { updateServeIndicators() }
+
+        viewModel.gameFinished.observe(this) { finished ->
+            if (finished) {
+                val winnerName = if (viewModel.myScore.value!! > viewModel.opponentScore.value!!) viewModel.playerName else viewModel.opponentName
+                showWinnerOverlay(winnerName)
+            } else {
+                winnerOverlay.visibility = View.GONE
+                konfettiView.reset()
+            }
+        }
 
         textToSpeech = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) textToSpeech.language = Locale.US
@@ -93,13 +105,15 @@ class MainActivity : AppCompatActivity() {
             override fun onMediaButtonEvent(mediaButtonIntent: android.content.Intent): Boolean {
                 val event = mediaButtonIntent.getParcelableExtra<KeyEvent>(android.content.Intent.EXTRA_KEY_EVENT)
                 if (event != null && event.action == KeyEvent.ACTION_DOWN) {
-                    when (event.keyCode) {
-                        KeyEvent.KEYCODE_MEDIA_NEXT -> addMyPoint()
-                        KeyEvent.KEYCODE_MEDIA_PREVIOUS -> addOpponentPoint()
-                        KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
-                        KeyEvent.KEYCODE_MEDIA_PLAY,
-                        KeyEvent.KEYCODE_MEDIA_PAUSE,
-                        KeyEvent.KEYCODE_HEADSETHOOK -> speakScore()
+                    runOnUiThread {
+                        when (event.keyCode) {
+                            KeyEvent.KEYCODE_MEDIA_NEXT -> viewModel.addMyPoint()
+                            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> viewModel.addOpponentPoint()
+                            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+                            KeyEvent.KEYCODE_MEDIA_PLAY,
+                            KeyEvent.KEYCODE_MEDIA_PAUSE,
+                            KeyEvent.KEYCODE_HEADSETHOOK -> speakScore()
+                        }
                     }
                 }
                 return true
@@ -111,25 +125,9 @@ class MainActivity : AppCompatActivity() {
         )
         mediaSession.isActive = true
 
-        findViewById<Button>(R.id.myPointBtn).setOnClickListener { addMyPoint() }
-        findViewById<Button>(R.id.opponentPointBtn).setOnClickListener { addOpponentPoint() }
-
-        findViewById<Button>(R.id.undoBtn).setOnClickListener {
-            if (history.isNotEmpty()) {
-                val prev = history.removeAt(history.size - 1)
-                myScore = prev.myScore
-                opponentScore = prev.opponentScore
-                isMyServe = prev.isMyServe
-                gameFinished = false
-                winnerOverlay.visibility = View.GONE
-                konfettiView.reset()
-                myScoreView.text = myScore.toString()
-                opponentScoreView.text = opponentScore.toString()
-                updateServeIndicators()
-                speakScore()
-            }
-        }
-
+        findViewById<Button>(R.id.myPointBtn).setOnClickListener { viewModel.addMyPoint() }
+        findViewById<Button>(R.id.opponentPointBtn).setOnClickListener { viewModel.addOpponentPoint() }
+        findViewById<Button>(R.id.undoBtn).setOnClickListener { viewModel.undo() }
         findViewById<Button>(R.id.resetBtn).setOnClickListener { resetMatch() }
 
         winnerOverlay.setOnClickListener {
@@ -139,8 +137,6 @@ class MainActivity : AppCompatActivity() {
                 konfettiView.reset()
             }.start()
         }
-
-        updateServeIndicators()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -149,6 +145,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateServeIndicators() {
+        val isMyServe = viewModel.isMyServe.value ?: true
         myServeIndicator.visibility = if (isMyServe) View.VISIBLE else View.INVISIBLE
         opponentServeIndicator.visibility = if (!isMyServe) View.VISIBLE else View.INVISIBLE
     }
@@ -209,7 +206,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showWinnerOverlay(winnerName: String) {
         winnerText.text = "$winnerName wins!"
-        winnerScore.text = "$myScore – $opponentScore"
+        winnerScore.text = "${viewModel.myScore.value} – ${viewModel.opponentScore.value}"
 
         Glide.with(this)
             .asGif()
@@ -238,71 +235,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetMatch() {
-        myScore = 0
-        opponentScore = 0
-        isMyServe = true
-        gameFinished = false
-        history.clear()
-        myScoreView.text = "0"
-        opponentScoreView.text = "0"
-        winnerOverlay.visibility = View.GONE
-        konfettiView.reset()
-        updateServeIndicators()
+        viewModel.reset()
         textToSpeech.speak("Match reset", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun speakScore() {
         val serveSide = getServeSide()
         textToSpeech.speak(
-            "$playerName $myScore. $opponentName $opponentScore. $serveSide",
+            "${viewModel.playerName} ${viewModel.myScore.value}. ${viewModel.opponentName} ${viewModel.opponentScore.value}. $serveSide",
             TextToSpeech.QUEUE_FLUSH, null, null
         )
     }
 
     private fun getServeSide(): String {
+        val myScore = viewModel.myScore.value ?: 0
+        val opponentScore = viewModel.opponentScore.value ?: 0
+        val isMyServe = viewModel.isMyServe.value ?: true
+
         return if (isMyServe) {
-            if (myScore % 2 == 0) "$playerName serves from right"
-            else "$playerName serves from left"
+            if (myScore % 2 == 0) "${viewModel.playerName} serves from right"
+            else "${viewModel.playerName} serves from left"
         } else {
-            if (opponentScore % 2 == 0) "$opponentName serves from right"
-            else "$opponentName serves from left"
+            if (opponentScore % 2 == 0) "${viewModel.opponentName} serves from right"
+            else "${viewModel.opponentName} serves from left"
         }
     }
 
-    private fun addMyPoint() {
-        if (gameFinished) return
-        history.add(GameState(myScore, opponentScore, isMyServe))
-        myScore++
-        isMyServe = true
-        myScoreView.text = myScore.toString()
-        updateServeIndicators()
-        animateScoreChange(myScoreView)
-        if (!checkGameEnd()) speakScore()
-    }
-
-    private fun addOpponentPoint() {
-        if (gameFinished) return
-        history.add(GameState(myScore, opponentScore, isMyServe))
-        opponentScore++
-        isMyServe = false
-        opponentScoreView.text = opponentScore.toString()
-        updateServeIndicators()
-        animateScoreChange(opponentScoreView)
-        if (!checkGameEnd()) speakScore()
-    }
-
     private fun checkGameEnd(): Boolean {
-        val maxScore = targetScore + 9
-        if (myScore >= targetScore || opponentScore >= targetScore) {
+        val myScore = viewModel.myScore.value ?: 0
+        val opponentScore = viewModel.opponentScore.value ?: 0
+        val maxScore = viewModel.targetScore + 9
+
+        if (myScore >= viewModel.targetScore || opponentScore >= viewModel.targetScore) {
             val diff = kotlin.math.abs(myScore - opponentScore)
             if (diff >= 2 || myScore >= maxScore || opponentScore >= maxScore) {
-                gameFinished = true
-                val winnerName = if (myScore > opponentScore) playerName else opponentName
-                showWinnerOverlay(winnerName)
+                viewModel.setGameFinished(true)
                 val speech = if (myScore > opponentScore)
-                    "Game over. $playerName wins $myScore to $opponentScore"
+                    "Game over. ${viewModel.playerName} wins $myScore to $opponentScore"
                 else
-                    "Game over. $opponentName wins $opponentScore to $myScore"
+                    "Game over. ${viewModel.opponentName} wins $opponentScore to $myScore"
                 textToSpeech.speak(speech, TextToSpeech.QUEUE_FLUSH, null, null)
                 return true
             }
@@ -315,7 +286,14 @@ class MainActivity : AppCompatActivity() {
             textToSpeech.stop()
             textToSpeech.shutdown()
         }
-        if (::mediaPlayer.isInitialized) mediaPlayer.release()
+        if (::mediaPlayer.isInitialized) {
+            mediaPlayer.stop()
+            mediaPlayer.release()
+        }
+        if (::mediaSession.isInitialized) {
+            mediaSession.isActive = false
+            mediaSession.release()
+        }
         super.onDestroy()
     }
 }
