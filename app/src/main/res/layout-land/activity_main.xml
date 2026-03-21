@@ -160,7 +160,7 @@
             android:text="+ Point"
             android:fontFamily="@font/lato_bold"
             android:textSize="13sp"
-            android:textColor="@color/accent_coral"
+            android:textColor="@color/white"
             android:background="@drawable/btn_opponent_bg"
             android:stateListAnimator="@null" />
 

@@ -1,47 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- res/drawable/ic_shuttlecock_bg.xml -->
-<!-- Large decorative version - same shape, single muted color, shown at low alpha in layout -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="220dp"
-    android:height="220dp"
-    android:viewportWidth="80"
-    android:viewportHeight="80">
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
 
     <group
-        android:pivotX="40"
-        android:pivotY="40"
-        android:rotation="-20">
+        android:pivotX="50"
+        android:pivotY="50"
+        android:rotation="-25">
 
-        <!-- Cork base -->
+        <!-- Cork Base (Head) -->
         <path
-            android:fillColor="#4A7C59"
-            android:pathData="M38,52 C38,52 32,58 32,63 C32,67.4 35.6,71 40,71 C44.4,71 48,67.4 48,63 C48,58 42,52 42,52 Z"/>
+            android:fillColor="@color/accent_green"
+            android:pathData="M42,75 C42,75 42,88 50,88 C58,88 58,75 58,75 L42,75 Z" />
 
-        <!-- Shaft -->
+        <!-- Base tape/band (Using the theme green) -->
         <path
-            android:fillColor="#4A7C59"
-            android:pathData="M38.5,20 L41.5,20 L43,52 L37,52 Z"/>
+            android:fillColor="@color/text_secondary"
+            android:pathData="M42,72 L58,72 L58,76 L42,76 Z" />
 
-        <!-- Feathers left -->
+        <!-- Feather Skirt Outline -->
         <path
-            android:fillColor="#4A7C59"
-            android:pathData="M40,22 C40,22 22,18 18,10 C22,14 34,20 40,22 Z"/>
+            android:fillColor="@color/accent_green"
+            android:pathData="M42,72 L15,15 C25,10 40,8 50,8 C60,8 75,10 85,15 L58,72 Z" />
 
-        <!-- Feathers right -->
+        <!-- Feather Details (Internal Lines) -->
         <path
-            android:fillColor="#4A7C59"
-            android:pathData="M40,22 C40,22 58,18 62,10 C58,14 46,20 40,22 Z"/>
+            android:strokeColor="@color/text_primary"
+            android:strokeWidth="0.5"
+            android:fillColor="#00000000"
+            android:strokeAlpha="0.2"
+            android:pathData="M50,72 L25,18 M50,72 L35,14 M50,72 L50,12 M50,72 L65,14 M50,72 L75,18" />
 
-        <!-- Ring band -->
+        <!-- Top Curve of Skirt -->
         <path
-            android:fillColor="#4A7C59"
-            android:pathData="M28,30 Q40,26 52,30 Q40,34 28,30 Z"/>
+            android:strokeColor="@color/text_secondary"
+            android:strokeWidth="1"
+            android:fillColor="#00000000"
+            android:pathData="M15,15 Q50,5 85,15" />
 
-        <!-- Feather spread outline -->
+        <!-- Double Stitching Lines -->
         <path
-            android:fillColor="#4A7C59"
-            android:pathData="M40,24 C33,21 20,15 16,8 C20,13 34,20 40,22 C46,20 60,13 64,8 C60,15 47,21 40,24 Z"/>
+            android:strokeColor="@color/text_secondary"
+            android:strokeWidth="1.2"
+            android:fillColor="#00000000"
+            android:pathData="M28,45 Q50,40 72,45" />
+
+        <path
+            android:strokeColor="@color/text_secondary"
+            android:strokeWidth="1"
+            android:fillColor="#00000000"
+            android:pathData="M22,30 Q50,25 78,30" />
 
     </group>
-
 </vector>
