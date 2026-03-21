@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/ic_shuttlecock_bg.xml -->
+<!-- Large decorative version - same shape, single muted color, shown at low alpha in layout -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="220dp"
+    android:height="220dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <group
+        android:pivotX="40"
+        android:pivotY="40"
+        android:rotation="-20">
+
+        <!-- Cork base -->
+        <path
+            android:fillColor="#4A7C59"
+            android:pathData="M38,52 C38,52 32,58 32,63 C32,67.4 35.6,71 40,71 C44.4,71 48,67.4 48,63 C48,58 42,52 42,52 Z"/>
+
+        <!-- Shaft -->
+        <path
+            android:fillColor="#4A7C59"
+            android:pathData="M38.5,20 L41.5,20 L43,52 L37,52 Z"/>
+
+        <!-- Feathers left -->
+        <path
+            android:fillColor="#4A7C59"
+            android:pathData="M40,22 C40,22 22,18 18,10 C22,14 34,20 40,22 Z"/>
+
+        <!-- Feathers right -->
+        <path
+            android:fillColor="#4A7C59"
+            android:pathData="M40,22 C40,22 58,18 62,10 C58,14 46,20 40,22 Z"/>
+
+        <!-- Ring band -->
+        <path
+            android:fillColor="#4A7C59"
+            android:pathData="M28,30 Q40,26 52,30 Q40,34 28,30 Z"/>
+
+        <!-- Feather spread outline -->
+        <path
+            android:fillColor="#4A7C59"
+            android:pathData="M40,24 C33,21 20,15 16,8 C20,13 34,20 40,22 C46,20 60,13 64,8 C60,15 47,21 40,24 Z"/>
+
+    </group>
+
+</vector>

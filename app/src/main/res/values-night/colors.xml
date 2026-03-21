@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Deep Space Dark Theme -->
+    <color name="bg_primary">#0F111A</color>
+    <color name="card_bg">#1A1D2B</color>
+    <color name="input_bg">#141721</color>
+    <color name="divider">#25293D</color>
+
+    <!-- Vibrant Electric Accents -->
+    <color name="accent_green">#00E676</color> <!-- Neon Green -->
+    <color name="accent_green_light">#1A3D2E</color>
+    <color name="accent_blue">#00B0FF</color> <!-- Electric Blue -->
+    <color name="accent_blue_light">#162C3E</color>
+
+    <!-- Text -->
+    <color name="text_primary">#E1E1E6</color>
+    <color name="text_secondary">#8F93A3</color>
+
+    <!-- States -->
+    <color name="radio_selected_bg">#00E676</color>
+    <color name="radio_unselected_bg">#25293D</color>
+    <color name="radio_selected_text">#0F111A</color>
+    <color name="radio_unselected_text">#8F93A3</color>
+</resources>

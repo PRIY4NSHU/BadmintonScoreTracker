@@ -40,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaSession: MediaSession
     private lateinit var mediaPlayer: MediaPlayer
 
+    private var isFirstAppearance = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -70,14 +72,18 @@ class MainActivity : AppCompatActivity() {
         // Observe ViewModel data
         viewModel.myScore.observe(this) { score ->
             myScoreView.text = score.toString()
-            animateScoreChange(myScoreView)
-            if (!checkGameEnd()) speakScore()
+            if (!isFirstAppearance) {
+                animateScoreChange(myScoreView)
+                if (!checkGameEnd()) speakScore()
+            }
         }
 
         viewModel.opponentScore.observe(this) { score ->
             opponentScoreView.text = score.toString()
-            animateScoreChange(opponentScoreView)
-            if (!checkGameEnd()) speakScore()
+            if (!isFirstAppearance) {
+                animateScoreChange(opponentScoreView)
+                if (!checkGameEnd()) speakScore()
+            }
         }
 
         viewModel.isMyServe.observe(this) { updateServeIndicators() }
@@ -93,7 +99,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         textToSpeech = TextToSpeech(this) { status ->
-            if (status == TextToSpeech.SUCCESS) textToSpeech.language = Locale.US
+            if (status == TextToSpeech.SUCCESS) {
+                textToSpeech.language = Locale.US
+                // Only now that TTS is ready and initialization is done, allow future score changes to speak
+                isFirstAppearance = false
+            }
         }
 
         mediaSession = MediaSession(this, "BadmintonScoreSession")
